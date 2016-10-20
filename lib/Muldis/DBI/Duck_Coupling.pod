@@ -30,7 +30,8 @@ VERSION in this file).
 
 The Muldis Duck Coupling DBI specification for Perl 5 is expressly designed
 to be compatible with the B<Muldis D> language specification (see
-L<Muldis::D>), however the two are also mutually independent by design.
+L<Muldis::D>), version C<Muldis_D;;"http://muldis.com";;"0.201.0.-9"> in
+particular; however the two are also mutually independent by design.
 Iff Perl 5 libraries that implement the MDCDBI choose to explicitly support
 using the Muldis D language with it, then certain parts of the MDCDBI
 specification would apply to them, and otherwise not.
