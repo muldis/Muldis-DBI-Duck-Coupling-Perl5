@@ -6,7 +6,7 @@ use ExtUtils::MakeMaker;
 
 WriteMakefile(
    NAME => 'Muldis::DBI::Duck_Coupling',
-   VERSION => '0.001_1',
+   VERSION => '0.001000_1',
    ABSTRACT => 'Formal spec of a duck-coupling database interface for Perl 5',
    AUTHOR => 'Darren Duncan <darren@DarrenDuncan.net>',
    PREREQ_PM => {},
