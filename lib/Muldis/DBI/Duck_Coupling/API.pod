@@ -40,6 +40,314 @@ to satisfy its needs and gracefully handle when they aren't met.
 
 I<This documentation is pending.>
 
+=head1 TERMINOLOGY
+
+There are some terms that this document uses which may have different
+meanings than what you may be used to, so here are a few notes to clarify
+what they mean in this document.
+
+=head2 value
+
+A I<value> is an individual constant that is not fixed in time or space.
+Every value is unique, eternal, and immutable; it has no address and can
+not be updated.  It does not make sense to say that you are creating or
+destroying or copying or mutating a I<value>, but it does make sense to say
+you are I<selecting> one.  So when one appears to be testing 2 values for
+equality, they are actually testing whether 2 value appearances are in fact
+the same value.  Every conceivable distinct concept can be represented by a
+value, whether it is a simple number or an arbitrarily complex collection.
+For every value there exists at least one I<selector> by means of which
+that value may manifest within a program; each selector takes the form of
+either a function or a value literal syntax.
+
+=head2 variable
+
+A I<variable> is a container for an appearance of a value.  It is neither
+unique nor eternal nor immutable in the typical case; it does have an
+address and in the typical case can be updated, meaning that over time a
+variable may hold appearances of different values.  A variable can be
+created, destroyed, copied, and mutated.  A variable's fundamental identity
+is its address, its identity does not vary with what value appears there.
+
+=head2 function
+
+A I<function> is a set of instructions for mapping a set of input values,
+its I<domain>, to a set of output values, its I<codomain>, in a pure and
+deterministic manner.  The I<result> value of a function call is determined
+entirely by its input I<source> value, and a function is guaranteed to give
+exactly the same single result value for every call with the same source
+value.  A I<function> is more constrained than a mathematical function
+(that it otherwise resembles) such that its input I<source> may only be a
+I<tuple> (a value of the C<Tuple> type) and not some other value.  This is
+for the purpose of avoiding unnecessary complications.
+
+=head2 procedure
+
+A I<procedure> is a set of instructions for either enacting possibly
+non-deterministic change over time in a set of variables or for reading
+from or writing to the external environment of the application, including
+its users or various external systems.  Any typical interaction with a DBMS
+by a Perl application would be mediated by at least one I<procedure>.
+
+=head2 data type
+
+A I<data type>, typically abbreviated I<type>, is fundamentally an
+unordered set (or just I<set>) of values, nothing more and nothing less.
+If and only if 2 sets of values are the same unordered set, they are the
+same type.  Analogous to how values are conceived, every type is unique,
+eternal, immutable, has no address and can not be updated.  Note that the
+concept of a I<type> as an unordered set of values is distinct from the
+concept of a I<value> which is an unordered set of values; no type I<is> a
+value, even though a set value is indeed isomorphic to a type.
+
+=head2 supertype / subtype / disjoint
+
+Take 2 arbitrary but not necessarily distinct data types, I<T1> and I<T2>.
+Iff the value set of I<T1> is a superset of that of I<T2>, then I<T1> is a
+I<supertype> of I<T2>, and I<T2> is a I<subtype> of I<T1>.  If additionally
+the 2 types are mutually distinct, meaning I<T1> has at least 1 value that
+I<T2> lacks, then I<T1> is additionally a I<proper supertype> of I<T2>, and
+I<T2> is additionally a I<proper subtype> of I<T1>.
+Iff 2 data types have no values in common, they are said to be I<disjoint>.
+
+=head2 object
+
+An I<object> (unqualified) is a Perl 5 object; this concept does not exist
+inside a DBMS virtual machine in the general case spoken to by this
+document; this term is only used outside the DBMS, in regular Perl 5 space.
+
+=head2 class
+
+A I<class> (unqualified) is a Perl 5 class; this concept does not exist
+inside a DBMS virtual machine in the general case spoken to by this
+document; this term is only used outside the DBMS, in regular Perl 5 space.
+
+=head1 DATA TYPES
+
+The B<Muldis Duck Coupling DBI> (B<MDCDBI>) library API for Perl 5 formally
+defines a set of I<data types> that all I<values>, being either used within
+a DBMS or being passed between or shared by a DBMS and the main Perl
+environment, are members of.  They define the finer details of interchange,
+both for regular data and for source code, which is a kind of data.
+
+=head2 Any
+
+The C<Any> type is the I<universal type>, which is the maximal data type of
+the type system and consists of all values which can possibly exist.
+
+The Perl 5 analogy to this type is C<UNIVERSAL> and/or the set of
+everything that can possibly be assigned to a Perl 5 scalar variable.
+
+=head2 Boolean
+
+A C<Boolean> value is a general purpose 2-valued logic boolean or I<truth
+value>, or specifically it is one of the 2 values I<false> and I<true>.
+
+Perl 5 doesn't have a native dedicated boolean type and canonically
+represents I<false> and I<true> with the results of C<(1==0)> and C<(1==1)>
+aka the non-ref scalars for the empty string and integer 1 respectively.
+
+=head2 Integer
+
+An C<Integer> value is a general purpose exact integral number of any
+magnitude, which explicitly does not represent any kind of thing in
+particular, neither cardinal nor ordinal nor nominal.  It has no minimum or
+maximum value.
+
+Perl 5 doesn't have a native dedicated unlimited-size-integer type but
+provides multiple alternatives for representing them.  A non-ref Perl 5
+scalar can natively represent an integer as an IV when its size is within
+the range of a signed 32-bit or 64-bit integer, the available option
+depending on how that Perl was compiled.  A non-ref Perl 5 scalar can
+natively represent any integer at all as a character string enumerating its
+digits (or hexits etc).  A Perl 5 C<Math::BigInt> object (class bundled with
+the Perl 5 core) is semantically the closest thing to a native dedicated
+unlimited-size-integer type, expecially when one wants to perform math.
+
+=head2 Fraction
+
+A C<Fraction> value is a general purpose exact rational number of any
+magnitude and precision, expressible canonically as a coprime I<numerator>
+/ I<denominator> pair of C<Integer> whose I<denominator> is positive, which
+explicitly does not represent any kind of thing in particular, neither
+cardinal nor ordinal nor nominal.  It has no minimum or maximum value.
+
+Perl 5 doesn't have a native dedicated unlimited-size-fraction type but
+provides multiple alternatives for representing them.  A non-ref Perl 5
+scalar can natively represent a very specific subset of the rational
+numbers as a native floating-point number, but for all practical purposes
+this representation format is unsuitable.  A non-ref Perl 5 scalar can
+natively represent a subset of rationals in full precision as a character
+string enumerating its digits (or hexits etc) that also has a radix point
+character.  A Perl 5 C<Math::BigRat> object (class bundled with the Perl 5
+core) is semantically the closest thing to a native dedicated
+unlimited-size-fraction type, expecially when one wants to perform math.
+
+=head2 Floating-Point Numbers
+
+I<TODO.>
+
+=head2 Array
+
+An C<Array> value is a general purpose arbitrarily-long ordered sequence of
+any other, I<member> values, which explicitly does not represent any kind
+of thing in particular, and is simply the sum of its members.  An C<Array>
+value is dense; iff it has any members, then its first-ordered member is at
+index position C<0>, and its last-indexed member is at the index position
+that is one less than the count of its members.  An C<Array> in the general
+case may have multiple members that are the same value, and any duplicates
+may or may not exist at consecutive indexes.
+
+Perl 5 has a native dedicated unlimited-size-array-of-generic-members type
+such that each array value is natively represented by a Perl 5
+array-reference.  Certain special cases of arrays can also be compactly
+represented by Perl 5 scalars that are Perl 5 strings.
+
+=head2 String
+
+A C<String> value is a general purpose integer string, which explicitly
+does not represent any kind of thing in particular, neither octets nor
+characters nor anything else, simply an arbitrarily-long ordered sequence
+of generic integers.  A C<String> value is also an C<Array> value whose
+members are all C<Integer>.
+
+Perl 5 can natively represent a C<String> in the same format it represents
+an C<Array>, or in all typical cases it can use a Perl 5 string instead.
+
+=head2 Bits
+
+A C<Bits> value is an arbitrarily-long sequence of I<bits> where each bit
+is represented by an C<Integer> in the range 0..1.
+
+Perl 5 can natively represent a short C<Bits> string either as a Perl 5
+integer (short sequences only) or as a Perl 5 string.
+
+=head2 Blob
+
+A C<Blob> value is an arbitrarily-long sequence of I<octets> where each
+octet is represented by an C<Integer> in the range 0..255.
+
+Perl 5 can natively represent a C<Blob> string as a Perl 5 string whose
+UTF8 flag is false.
+
+The Perl 5 C<BLOB> class provided on CPAN "aims to be the single way of
+indicating that a string is binary, not text" and is semantically quite
+appropriate for the task of representing a C<Blob> value in Perl 5 land.
+
+=head2 Text
+
+A C<Text> value is an arbitrarily-long sequence of abstract I<characters>
+where each character is a member of an infinite-size proprietary abstract
+character repertoire named I<maximal>, the latter in turn being formally a
+proper superset of the 0x10F7FF-character repertoire of Unicode, so for all
+practical purposes this is a Unicode character string.  A C<Text> value is
+canonically defined in terms of a C<String> value, where each member
+C<Integer> of the latter represents a (typically Unicode) abstract character
+I<codepoint>, with each unique integer corresponding to a unique character.
+
+Perl 5 can natively represent a C<Text> string as a Perl 5 string either
+whose UTF8 flag is true or all of whose octets are in the range 0..127.
+
+=head2 Set
+
+A C<Set> value is a general purpose arbitrarily-large unordered collection
+of any other, I<member> values, which explicitly does not represent any
+kind of thing in particular, and is simply the sum of its members.  A
+C<Set> ensures that no 2 of its members are the same value.
+
+Perl 5 doesn't have a native dedicated set-of-generic-members type but a
+Perl 5 array can be used with the presumption that the order of its
+elements is not significant and that any multiplicity of elements
+representing the same I<value> only counts as 1 instance of each value.
+
+=head2 Bag
+
+A C<Bag> value is a general purpose arbitrarily-large unordered collection
+of any other, I<member> values, which explicitly does not represent any
+kind of thing in particular, and is simply the sum of its members.  A
+C<Bag> in the general case may have multiple members that are the same
+value.
+
+Perl 5 doesn't have a native dedicated multiset-of-generic-members type but
+a Perl 5 array can be used with the presumption that the order of its
+elements is not significant.
+
+=head2 Tuple
+
+A C<Tuple> value is a general purpose arbitrarily-large unordered
+heterogeneous collection of named I<attributes>, such that no 2 attributes
+have the same I<attribute name>, which explicitly does not represent any
+kind of thing in particular, and is simply the sum of its attributes.  An
+attribute is conceptually a name-asset pair, the name being used to look up
+the attribute in a C<Tuple>.  An I<attribute name> is an unqualified
+program identifier, isomorphic to a C<String> value, and is conceptually a
+character string that is not a C<Text> value.  In the general case each
+attribute of a tuple is of a distinct data type, though multiple attributes
+often have the same type.  The set of attribute names of a C<Tuple> is
+called its I<heading>, and the corresponding attribute assets are called
+its I<body>.  With respect to the relational model of data, a I<heading>
+represents a predicate, for which each I<attribute name> is a free
+variable, and a C<Tuple> as a whole represents a derived proposition, where
+the corresponding attribute asset values substitute for the free variables;
+however, any actual predicate/etc is defined by the context of a C<Tuple>
+value and a C<Tuple> in isolation explicitly does not represent any
+proposition in particular.
+
+The canonical way to represent the concept of a I<tuple> that has ordered
+attributes is to use integral names; to be specific, the attribute name
+consisting of just the character codepoint 0 would mark the first ordered
+attribute, the name consisting of just the codepoint 1 would mark the
+second, and so on; this can be repeated up to 32 "positional" names whose
+names would correspond to non-printing Unicode codepoints and would
+alphabetically sort correctly and prior to any normal text-like attribute
+names like C<name> or C<age>; said first 32 would likewise be distinct in
+appearance from all regular printable numbers used as attribute names.
+
+For all practical purposes, Perl 5 has a native dedicated
+unlimited-size-tuple-of-generic-members type such that each tuple value is
+natively represented by a Perl 5 hash-reference, where the Perl 5 hash keys
+and values are the attribute names and assets respectively.
+
+=head2 Tuple_Array
+
+I<TODO.>
+
+=head2 Relation
+
+I<TODO.>
+
+=head2 Tuple_Bag
+
+I<TODO.>
+
+=head2 Interval
+
+I<TODO.>
+
+=head2 Interval_Set
+
+I<TODO.>
+
+=head2 Interval_Bag
+
+I<TODO.>
+
+=head2 Quantity
+
+I<TODO.>
+
+=head2 Capsule
+
+I<TODO.>
+
+=head2 Reference
+
+I<TODO.>
+
+=head2 External
+
+I<TODO.>
+
 =head1 INTERFACE
 
 The interface of Muldis::DBI::Duck_Coupling::API is entirely
@@ -55,6 +363,57 @@ The usual way that Muldis::DBI::Duck_Coupling::API indicates a failure is
 to throw an exception; most often this is due to invalid input.  If an
 invoked routine simply returns, you can assume that it has succeeded, even
 if the return value is undefined.
+
+=head1 PACKAGES
+
+The Muldis::DBI::Duck_Coupling::API virtual library includes the following
+virtual Perl packages.  Other libraries that implement the B<Muldis Duck
+Coupling DBI> specification can choose to have a different count of
+packages; the important thing is that when one of the following methods is
+implemented, any objects created by those methods would have the methods of
+their own that they should have.
+
+=head2 Muldis::DBI::Duck_Coupling::API
+
+I<TODO.>
+
+=head2 Muldis::DBI::Duck_Coupling::API::Machine
+
+A C<Machine> object represents a single active instance of a database
+management system (DBMS) or virtual machine environment, which is the
+widest scope stateful context in which any other database activities
+happen.  Other activities meaning the creation or destruction or
+association or disassociation with one or more databases, the authoring or
+compilation or execution of routines, either to fetch data or manipulate
+data, the creation or destruction of database constraints, the management
+of transactions, and so on.  A C<Machine> object also represents the global
+memory pool of an active DBMS instance, within which all processes and
+values and variables live.
+
+A typical Perl application would use exactly one C<Machine> object at a
+time and it would tend to be as long-lived as the Perl process itself.
+Some libraries implementing B<MDCDBI> may treat a C<Machine> as a
+singleton, so only one such object may exist at a time through which it
+manages resources; other implementers may allow several at once, in which
+case they should be completely independent.
+
+=head2 Muldis::DBI::Duck_Coupling::API::Process
+
+A C<Process> object represents a single in-DBMS I<process>, which typically
+has its own autonomous transactional context.  It is associated with a
+specific C<Machine> object, the one whose C<new_process> method created it.
+A typical Perl application would use a distinct C<Process> object for each
+conceptually independent distinct instance of a DBMS "connection".
+
+=head2 Muldis::DBI::Duck_Coupling::API::Value
+
+A C<Value> object represents a single in-DBMS value or variable.  It is
+associated with a specific C<Machine> object, the one whose C<new_value>
+method created it, and sometimes also with a specific C<Process> object.
+C<Value> objects are the normal way to directly share or move data between
+the DBMS and main Perl environments.  The way to represent an in-DBMS
+variable with a C<Value> object is to use a I<value> whose I<data type> is
+C<Reference>.
 
 =head1 DIAGNOSTICS
 
