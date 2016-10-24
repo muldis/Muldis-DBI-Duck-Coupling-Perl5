@@ -42,44 +42,24 @@ I<This documentation is pending.>
 
 I<This documentation is pending.>
 
+I<TODO: For all intents and purposes, this API is intended as a direct
+replacement for DBI itself, such as if DBI itself had a rewrite, or if this
+were a DBI2 etc.  The Perl 6 version could BE the first "DBI" there.
+Thus DBI is part of the name, not DBIx or whatever.  Ideally Tim Bunce would
+bless this as the official DBI successor / major new version, and eventually
+it could even gain the name "DBI" or "DBI2" in Perl 5.>
+
 I<TODO: The API details would be described partly in terms of a fake
 example Perl 5 library implementing it, where the given example code uses
 for brevity and clarity the Perl 5 subroutine signature syntax added to
 Perl in version 5.20 (2014) and which uses lots of the "..." yada-yada
 syntax.>
 
-=head1 INTERFACE
-
-I<This documentation is pending.>
-
-=head1 DIAGNOSTICS
-
-I<This documentation is pending.>
-
-=head1 CONFIGURATION AND ENVIRONMENT
-
-I<This documentation is pending.>
-
-=head1 DEPENDENCIES
-
-As of this time, any version of Perl 5 at all (5.0 from 1994 and up) is
-expected to be able to provide the necessary foundation for Perl 5 code
-that is able to speak the B<Muldis Duck Coupling DBI> API.  The API makes
-heavy use of basic Perl 5 references and objects, which are not present in
-Perls 1 thru 4, but otherwise there are currently no known requirements
-that Perl 5 didn't have from the start; if this turns out not to be the
-case, the minimum required Perl 5 version can be raised.
-
-The API documentation has example code in its definitions that uses
-syntactic or other features which only work in newer versions of Perl, for
-example subroutine signatures were only added as of Perl 5.20.0 in 2014.
-But these features are only used for clarity and brevity of the
-documentation, and actual code speaking the API can be written without that
-syntactic sugar while remaining compatible.
-
-=head1 INCOMPATIBILITIES
-
-I<This documentation is pending.>
+I<Conforming to this API doesn't preclude the implementer from providing
+additional classes and routines, it just requires that a specific subset
+exists among those; an implementer can add proprietary features that may create
+lock-in if used, but if users stick to what the API mandates then they shouldn't
+be (as) locked-in.>
 
 =head1 VERSIONING
 

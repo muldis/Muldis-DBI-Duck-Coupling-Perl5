@@ -1,0 +1,118 @@
+=pod
+
+=encoding utf8
+
+=head1 NAME
+
+Muldis::DBI::Duck_Coupling::API -
+Virtual Database Management System for Perl 5
+
+=head1 VERSION
+
+This document is Muldis::DBI::Duck_Coupling::API version 0.1.0.-9 for Perl 5.
+
+=head1 SYNOPSIS
+
+I<This documentation is pending.>
+
+=head1 DESCRIPTION
+
+Muldis::DBI::Duck_Coupling::API is the virtual reference implementation of
+the B<Muldis Duck Coupling DBI> (B<MDCDBI>) library API for Perl 5,
+authority C<http://muldis.com>, version number C<0.1.0.-9>.  It is also the
+main part of the human readable authoritative formal specification of the
+B<MDCDBI> library API itself.
+
+This document intentionally takes the form of API documentation for a
+concrete Perl 5 library named C<Muldis::DBI::Duck_Coupling::API>; however,
+no Perl 5 library with that name actually exists, and it never should
+exist; thus C<Muldis::DBI::Duck_Coupling::API> is a I<virtual> library.
+
+An actual concrete Perl 5 library that implements and is fully conformant
+to the B<Muldis Duck Coupling DBI> specification is one that provides an
+API that is a (possibly non-proper) superset of the API of the virtual
+library defined here.  And so, any applications or other libraries
+depending on the B<MDCDBI> should be fully portable between all such
+conforming libraries, at least with respect to what the API spec defines;
+furthermore, dependents should be able to programmatically discover to what
+degree the entire feature set and API of the implementing library is able
+to satisfy its needs and gracefully handle when they aren't met.
+
+I<This documentation is pending.>
+
+=head1 INTERFACE
+
+The interface of Muldis::DBI::Duck_Coupling::API is entirely
+object-oriented; you use it by creating objects from its member classes and
+then invoking methods on those objects.  All of their attributes are
+private, so you must use accessor methods.
+
+The canonical way to create every API object is to invoke a I<factory>
+method, typically on a prior-existing object, and rarely (exactly once in
+typical cases) on the name of a I<provider information class>.
+
+The usual way that Muldis::DBI::Duck_Coupling::API indicates a failure is
+to throw an exception; most often this is due to invalid input.  If an
+invoked routine simply returns, you can assume that it has succeeded, even
+if the return value is undefined.
+
+=head1 DIAGNOSTICS
+
+I<This documentation is pending.>
+
+=head1 CONFIGURATION AND ENVIRONMENT
+
+I<This documentation is pending.>
+
+=head1 DEPENDENCIES
+
+As of this time, any version of Perl 5 at all (5.0 from 1994 and up) is
+expected to be able to provide the necessary foundation for Perl 5 code
+that is able to speak the B<Muldis Duck Coupling DBI> API.  The API makes
+heavy use of basic Perl 5 references and objects, which are not present in
+Perls 1 thru 4, but otherwise there are currently no known requirements
+that Perl 5 didn't have from the start; if this turns out not to be the
+case, the minimum required Perl 5 version can be raised.
+
+The API documentation has example code in its definitions that uses
+syntactic or other features which only work in newer versions of Perl, for
+example subroutine signatures were only added as of Perl 5.20.0 in 2014.
+But these features are only used for clarity and brevity of the
+documentation, and actual code speaking the API can be written without that
+syntactic sugar while remaining compatible.
+
+=head1 INCOMPATIBILITIES
+
+I<This documentation is pending.>
+
+=head1 SEE ALSO
+
+Go to L<Muldis::DBI::Duck_Coupling> for the majority of both
+distribution-internal and external references.
+
+=head1 BUGS AND LIMITATIONS
+
+I<This documentation is pending.>
+
+=head1 AUTHOR
+
+Darren Duncan (C<darren@DarrenDuncan.net>)
+
+=head1 LICENSE AND COPYRIGHT
+
+This file is part of the formal specification of the the B<Muldis Duck
+Coupling DBI> (B<MDCDBI>) library API for Perl 5.
+
+MDCDBI is Copyright © 2002-2016, Muldis Data Systems, Inc.
+
+See the LICENSE AND COPYRIGHT of L<Muldis::DBI::Duck_Coupling> for details.
+
+=head1 ACKNOWLEDGEMENTS
+
+See the ACKNOWLEDGEMENTS of L<Muldis::DBI::Duck_Coupling> for details.
+
+=head1 FORUMS
+
+See the FORUMS of L<Muldis::DBI::Duck_Coupling> for details.
+
+=cut
