@@ -139,7 +139,7 @@ This specification avoids defining any relationship between these types,
 and officially leaves it up to each B<MDCDBI>-implementing library to
 define for itself whether any two given types are I<conjoined> (have any
 values in common) or I<disjoint> (have no values in common).  For example,
-some DBMSs may consider C<Integer> to be a I<subtype> of I<Fraction> (C<42>
+some DBMSs may consider C<Integer> to be a I<subtype> of C<Fraction> (C<42>
 is a member of both) while others may consider the two types to be disjoint
 (C<42> and C<42.0> do not compare as equal).  The sole exceptions are that
 the C<Any> and C<None> types explicitly are a I<supertype> or I<subtype>
@@ -372,8 +372,8 @@ application process using the B<MDCDBI>-implementing library.
 An C<Excuse> value is an explicitly stated reason for why, given some
 particular problem domain, a value is not being used that is ordinary for
 that domain.  For example, the typical integer division operation is not
-defined to give an integer result when the divisor is zero, and so a Muldis
-D function for integer division could be defined to result in an C<Excuse>
+defined to give an integer result when the divisor is zero, and so a
+function for integer division could be defined to result in an C<Excuse>
 value rather than throw an exception in that case.  For another example, an
 C<Excuse> value could be used to declare that the information we are
 storing about a person is missing certain details and why those are
