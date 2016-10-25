@@ -100,7 +100,11 @@ concept of a I<type> as an unordered set of values is distinct from the
 concept of a I<value> which is an unordered set of values; no type I<is> a
 value, even though a set value is indeed isomorphic to a type.
 
-=head2 supertype / subtype / disjoint
+=head2 singleton type
+
+A I<singleton type> is a type that consists of exactly 1 value.
+
+=head2 supertype / subtype / disjoint / conjoined
 
 Take 2 arbitrary but not necessarily distinct data types, I<T1> and I<T2>.
 Iff the value set of I<T1> is a superset of that of I<T2>, then I<T1> is a
@@ -109,6 +113,7 @@ the 2 types are mutually distinct, meaning I<T1> has at least 1 value that
 I<T2> lacks, then I<T1> is additionally a I<proper supertype> of I<T2>, and
 I<T2> is additionally a I<proper subtype> of I<T1>.
 Iff 2 data types have no values in common, they are said to be I<disjoint>.
+Iff 2 data types have any values in common, they are said to be I<conjoined>.
 
 =head2 object
 
@@ -130,6 +135,27 @@ a DBMS or being passed between or shared by a DBMS and the main Perl
 environment, are members of.  They define the finer details of interchange,
 both for regular data and for source code, which is a kind of data.
 
+This specification avoids defining any relationship between these types,
+and officially leaves it up to each B<MDCDBI>-implementing library to
+define for itself whether any two given types are I<conjoined> (have any
+values in common) or I<disjoint> (have no values in common).  For example,
+some DBMSs may consider C<Integer> to be a I<subtype> of I<Fraction> (C<42>
+is a member of both) while others may consider the two types to be disjoint
+(C<42> and C<42.0> do not compare as equal).  The sole exceptions are that
+the C<Any> and C<None> types explicitly are a I<supertype> or I<subtype>
+respectively of every other type, regardless of the implementing library,
+for what that's worth.
+
+Each B<MDCDBI>-implementing library is not required to support every one of
+the types defined here; however, every I<value> that the library supports
+passing to/from the main Perl 5 environment must be losslessly represented
+using at least one of the types defined here, and that value must be
+losslessly round-trippable using all of those representations.  Note that
+the C<Capsule> type is the idiomatic way for a DBMS to represent "new"
+types in a consistent way.
+
+I<This list is subject to be expanded over time.>
+
 =head2 Any
 
 The C<Any> type is the I<universal type>, which is the maximal data type of
@@ -137,6 +163,11 @@ the type system and consists of all values which can possibly exist.
 
 The Perl 5 analogy to this type is C<UNIVERSAL> and/or the set of
 everything that can possibly be assigned to a Perl 5 scalar variable.
+
+=head2 None
+
+The C<None> type is the I<empty type>, which is the minimal data type of
+the type system and consists of exactly zero values.
 
 =head2 Boolean
 
@@ -183,36 +214,9 @@ character.  A Perl 5 C<Math::BigRat> object (class bundled with the Perl 5
 core) is semantically the closest thing to a native dedicated
 unlimited-size-fraction type, expecially when one wants to perform math.
 
-=head2 Floating-Point Numbers
+=head2 (TODO: Other Numeric Types)
 
 I<TODO.>
-
-=head2 Array
-
-An C<Array> value is a general purpose arbitrarily-long ordered sequence of
-any other, I<member> values, which explicitly does not represent any kind
-of thing in particular, and is simply the sum of its members.  An C<Array>
-value is dense; iff it has any members, then its first-ordered member is at
-index position C<0>, and its last-indexed member is at the index position
-that is one less than the count of its members.  An C<Array> in the general
-case may have multiple members that are the same value, and any duplicates
-may or may not exist at consecutive indexes.
-
-Perl 5 has a native dedicated unlimited-size-array-of-generic-members type
-such that each array value is natively represented by a Perl 5
-array-reference.  Certain special cases of arrays can also be compactly
-represented by Perl 5 scalars that are Perl 5 strings.
-
-=head2 String
-
-A C<String> value is a general purpose integer string, which explicitly
-does not represent any kind of thing in particular, neither octets nor
-characters nor anything else, simply an arbitrarily-long ordered sequence
-of generic integers.  A C<String> value is also an C<Array> value whose
-members are all C<Integer>.
-
-Perl 5 can natively represent a C<String> in the same format it represents
-an C<Array>, or in all typical cases it can use a Perl 5 string instead.
 
 =head2 Bits
 
@@ -241,12 +245,28 @@ where each character is a member of an infinite-size proprietary abstract
 character repertoire named I<maximal>, the latter in turn being formally a
 proper superset of the 0x10F7FF-character repertoire of Unicode, so for all
 practical purposes this is a Unicode character string.  A C<Text> value is
-canonically defined in terms of a C<String> value, where each member
-C<Integer> of the latter represents a (typically Unicode) abstract character
+canonically defined in terms of a sequence of C<Integer> where each of
+those represents a (typically Unicode) abstract character
 I<codepoint>, with each unique integer corresponding to a unique character.
 
 Perl 5 can natively represent a C<Text> string as a Perl 5 string either
 whose UTF8 flag is true or all of whose octets are in the range 0..127.
+
+=head2 Array
+
+An C<Array> value is a general purpose arbitrarily-long ordered sequence of
+any other, I<member> values, which explicitly does not represent any kind
+of thing in particular, and is simply the sum of its members.  An C<Array>
+value is dense; iff it has any members, then its first-ordered member is at
+index position C<0>, and its last-indexed member is at the index position
+that is one less than the count of its members.  An C<Array> in the general
+case may have multiple members that are the same value, and any duplicates
+may or may not exist at consecutive indexes.
+
+Perl 5 has a native dedicated unlimited-size-array-of-generic-members type
+such that each array value is natively represented by a Perl 5
+array-reference.  Certain special cases of arrays can also be compactly
+represented by Perl 5 scalars that are Perl 5 strings.
 
 =head2 Set
 
@@ -280,18 +300,17 @@ have the same I<attribute name>, which explicitly does not represent any
 kind of thing in particular, and is simply the sum of its attributes.  An
 attribute is conceptually a name-asset pair, the name being used to look up
 the attribute in a C<Tuple>.  An I<attribute name> is an unqualified
-program identifier, isomorphic to a C<String> value, and is conceptually a
-character string that is not a C<Text> value.  In the general case each
-attribute of a tuple is of a distinct data type, though multiple attributes
-often have the same type.  The set of attribute names of a C<Tuple> is
-called its I<heading>, and the corresponding attribute assets are called
-its I<body>.  With respect to the relational model of data, a I<heading>
-represents a predicate, for which each I<attribute name> is a free
-variable, and a C<Tuple> as a whole represents a derived proposition, where
-the corresponding attribute asset values substitute for the free variables;
-however, any actual predicate/etc is defined by the context of a C<Tuple>
-value and a C<Tuple> in isolation explicitly does not represent any
-proposition in particular.
+program identifier and is conceptually a character string that is not a
+C<Text> value.  In the general case each attribute of a tuple is of a
+distinct data type, though multiple attributes often have the same type.
+The set of attribute names of a C<Tuple> is called its I<heading>, and the
+corresponding attribute assets are called its I<body>.  With respect to the
+relational model of data, a I<heading> represents a predicate, for which
+each I<attribute name> is a free variable, and a C<Tuple> as a whole
+represents a derived proposition, where the corresponding attribute asset
+values substitute for the free variables; however, any actual predicate/etc
+is defined by the context of a C<Tuple> value and a C<Tuple> in isolation
+explicitly does not represent any proposition in particular.
 
 The canonical way to represent the concept of a I<tuple> that has ordered
 attributes is to use integral names; to be specific, the attribute name
@@ -307,6 +326,10 @@ For all practical purposes, Perl 5 has a native dedicated
 unlimited-size-tuple-of-generic-members type such that each tuple value is
 natively represented by a Perl 5 hash-reference, where the Perl 5 hash keys
 and values are the attribute names and assets respectively.
+
+=head2 Heading
+
+I<TODO.>
 
 =head2 Tuple_Array
 
@@ -324,18 +347,6 @@ I<TODO.>
 
 I<TODO.>
 
-=head2 Interval_Set
-
-I<TODO.>
-
-=head2 Interval_Bag
-
-I<TODO.>
-
-=head2 Quantity
-
-I<TODO.>
-
 =head2 Capsule
 
 I<TODO.>
@@ -346,7 +357,99 @@ I<TODO.>
 
 =head2 External
 
-I<TODO.>
+An C<External> value is an opaque and transient reference to an entity that
+is defined and managed externally to the DBMS environment, either
+internally to the DBMS host implementation or in some peer language that it
+mediates.  The C<External> type is useful for when you want the DBMS to
+manage native Perl objects to the extent that it is capable of; the DBMS
+would treat each C<External> value as a black box to pass around, but not
+to operate on, except by means of special routines Perl provides to it.
+An C<External> value can in general only exist in the memory of the Perl 5
+application process using the B<MDCDBI>-implementing library.
+
+=head2 Excuse
+
+An C<Excuse> value is an explicitly stated reason for why, given some
+particular problem domain, a value is not being used that is ordinary for
+that domain.  For example, the typical integer division operation is not
+defined to give an integer result when the divisor is zero, and so a Muldis
+D function for integer division could be defined to result in an C<Excuse>
+value rather than throw an exception in that case.  For another example, an
+C<Excuse> value could be used to declare that the information we are
+storing about a person is missing certain details and why those are
+missing, such as because the person left the birthdate field blank on their
+application form.  An C<Excuse> is isomorphic to an I<exception> but that
+use of the former is not meant to terminate execution of code early unlike
+the latter which is.
+
+=head2 Excuse_No_Reason
+
+The singleton type value C<Excuse_No_Reason> represents the I<excuse> which
+simply says that an ordinary value for any given domain is missing and that
+there is simply no excuse that has been given for this; in other words,
+something has gone wrong without the slightest hint of an explanation.
+This is conceptually the most generic I<excuse> value there is and it can
+be used by lazy programmers as a fallback for when they don't have even a
+semblance of a better explanation for why an ordinary value is missing.
+
+Perl 5 has a dedicated generic excuse-with-no-reason singleton which is the
+Perl 5 scalar value C<undef>.
+
+For a B<MDCDBI>-implementing library that natively has a concept of
+3-valued logic, specifically a concept like such where the multiplicity of
+scenarios that may produce a special no-regular-value-is-here marker do in
+fact all produce the exact same marker, C<Excuse_No_Reason> is the official
+way to represent that marker.  This includes the I<null> of any common
+dialect of SQL.  Whereas, for DBMS libraries that distinguish the reasons
+for why a regular value may be missing, C<Excuse_No_Reason> should NOT be
+used and instead other more applicable I<excuse> values should instead.
+
+=head2 Excuse_Neg_Inf
+
+The singleton type value C<Excuse_Neg_Inf> represents the type-agnostic
+concept of negative infinity, an I<orderable> value that sorts I<before>
+all other values in the type system.  This value is also an I<excuse> that
+says the result of some operation is infinite in the negative direction.
+
+=head2 Excuse_Pos_Inf
+
+The singleton type value C<Excuse_Pos_Inf> represents the type-agnostic
+concept of positive infinity, an I<orderable> value that sorts I<after> all
+other values in the type system.  This value is also an I<excuse> that says
+the result of some operation is infinite in the positive direction.
+
+=head2 Excuse_Div_By_Zero
+
+The singleton type value C<Excuse_Div_By_Zero> represents the I<undefined>
+result of attempting to divide a simple number by a simple, unsigned,
+number zero.
+
+=head2 Excuse_Zero_To_The_Zero
+
+The singleton type value C<Excuse_Zero_To_The_Zero> represents the
+I<undefined> result of attempting to exponentiate a number zero to the
+power of a number zero.
+
+=head2 Excuse_No_Such_Index
+
+The singleton type value C<Excuse_No_Such_Index> represents the
+I<undefined> result of attempting to use a member index I<I> of
+C<Array>/etc value I<V> while assuming incorrectly that I<V> already has a
+member whose index is I<I>.
+
+=head2 Excuse_No_Such_Attr_Name
+
+The singleton type value C<Excuse_No_Such_Attr_Name> represents the
+I<undefined> result of attempting to use an attribute named I<N> of
+C<Tuple>/etc value I<V> while assuming incorrectly that I<V> already has an
+attribute whose name is I<N>.
+
+=head2 Excuse_Not_Same_Heading
+
+The singleton type value C<Excuse_Not_Same_Heading> represents the
+I<undefined> result of attempting to perform an operation that takes 2
+C<Tuple>/etc inputs and requires them to have the same relational
+I<heading> but the actual 2 inputs have different headings.
 
 =head1 INTERFACE
 
