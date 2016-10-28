@@ -218,6 +218,16 @@ unlimited-size-fraction type, expecially when one wants to perform math.
 
 I<TODO.>
 
+=head2 String
+
+A C<String> value is a general purpose integer string, which explicitly
+does not represent any kind of thing in particular, neither octets nor
+characters nor anything else, simply an arbitrarily-long ordered sequence
+of generic integers, where each integer is represented by an C<Integer>.
+
+Perl 5 can natively represent a C<String> in the same format it represents
+an C<Array>, or in all typical cases it can use a Perl 5 string instead.
+
 =head2 Bits
 
 A C<Bits> value is an arbitrarily-long sequence of I<bits> where each bit
@@ -354,6 +364,9 @@ I<TODO.>
 =head2 Reference
 
 I<TODO.>
+
+Perl 5 has a direct analogy to a C<Reference> which is a Perl 5 scalar
+reference to a Perl 5 scalar reference, the latter pointing to whatever.
 
 =head2 External
 
@@ -528,13 +541,13 @@ I<This documentation is pending.>
 
 =head1 DEPENDENCIES
 
-As of this time, any version of Perl 5 at all (5.0 from 1994 and up) is
-expected to be able to provide the necessary foundation for Perl 5 code
-that is able to speak the B<Muldis Duck Coupling DBI> API.  The API makes
-heavy use of basic Perl 5 references and objects, which are not present in
-Perls 1 thru 4, but otherwise there are currently no known requirements
-that Perl 5 didn't have from the start; if this turns out not to be the
-case, the minimum required Perl 5 version can be raised.
+As of this time, any stable version of Perl 5 at all (language version
+C<5.0> from 1994 and up) is expected to be able to provide the necessary
+foundation for Perl 5 code that is able to speak the B<Muldis Duck Coupling
+DBI> API.  The API makes heavy use of basic Perl 5 references and objects,
+which are not present in Perls 1 thru 4, but otherwise there are currently
+no known requirements that Perl 5 didn't have from the start; if this turns
+out not to be the case, the minimum required Perl 5 version can be raised.
 
 The API documentation has example code in its definitions that uses
 syntactic or other features which only work in newer versions of Perl, for

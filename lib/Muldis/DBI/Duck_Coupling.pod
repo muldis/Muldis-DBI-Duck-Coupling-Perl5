@@ -13,18 +13,19 @@ This document is Muldis::DBI::Duck_Coupling version 0.1.0.-9 for Perl 5.
 
 =head1 PREFACE
 
-This document is hereby proposed as the official successor to the Perl 5
-L<DBI> library, and thus is formally proposed to take the namespace C<DBI2>
-in place of its current C<Muldis::DBI::Duck_Coupling> name.
+This document is hereby proposed as the official Perl 5 successor to the
+Perl 5 L<DBI> library, and thus is formally proposed to take the Perl 5
+namespace C<DBI2> in place of its current C<Muldis::DBI::Duck_Coupling> name.
 
 Said project rename is subject to approval by Tim Bunce (author of L<DBI>)
 and the community, who are invited to take co-ownership of it and further
 evolve it as necessary to satisfy the requirements of an official C<DBI>.
 
-Similarly, it is proposed that any versions of existing C<DBD::*> modules
-adapted to this C<DBI2> would by default have their corresponding
-C<DBD2::*> names, though they can also be free to pick new names of their
-choosing, as C<DBI2> would not place any requirements on implementers names.
+Similarly, it is suggested that any versions of existing Perl 5 C<DBD::*>
+modules adapted to this new C<DBI2> would by default have their
+corresponding Perl 5 C<DBD2::*> names, though they can also be free to pick
+new names of their choosing, as this new C<DBI2> would not place any
+requirements on implementing modules' names.
 
 If this proposal is rejected, the current name
 C<Muldis::DBI::Duck_Coupling> can continue to be used going forward.
